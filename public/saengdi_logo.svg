@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 280" width="100%" height="100%">
+  <defs>
+    <!-- Arrow Gradient: #2563eb (Royal Blue) -> #0284c7 -> #06b6d4 (Cyan) -> #10b981 (Teal/Emerald) -->
+    <linearGradient id="saengdi-arrow-grad" x1="0%" y1="100%" x2="55%" y2="0%">
+      <stop offset="0%" stop-color="#1d4ed8" />
+      <stop offset="35%" stop-color="#0284c7" />
+      <stop offset="70%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+
+    <!-- 'ㅣ' Top Accent Leaf Gradient -->
+    <linearGradient id="saengdi-leaf-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+
+    <!-- Left Slanted Pill Gradient: Vibrant Blue -->
+    <linearGradient id="saengdi-pill-blue" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+
+    <!-- Deep Blue / Navy Color for text and solid strokes -->
+    <style>
+      .navy-solid { fill: #0d2e6b; }
+      .navy-stroke { stroke: #0d2e6b; }
+      .slogan-title {
+        font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+        font-weight: 900;
+        fill: #0d2e6b;
+      }
+      .slogan-desc {
+        font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+        font-weight: 600;
+        fill: #1e3a8a;
+        letter-spacing: 0.28em;
+      }
+    </style>
+  </defs>
+
+  <!-- Left: Stylized Symbol "생디" -->
+  <g transform="translate(18, 14)">
+    <!-- Syllable '생' -->
+    <!-- 'ㅅ' Left Slanted Rounded Bar -->
+    <rect x="34" y="66" width="24" height="92" rx="12" transform="rotate(-38 46 112)" fill="url(#saengdi-pill-blue)" />
+
+    <!-- 'ㅅ' Right Arrow pointing up-right with 3D-like fold shadow -->
+    <g transform="translate(138, 58)">
+      <!-- Arrow shaft (thick rounded gradient stroke) -->
+      <line x1="-42" y1="52" x2="8" y2="-12" stroke="url(#saengdi-arrow-grad)" stroke-width="26" stroke-linecap="round" />
+      <!-- Arrow head (large sharp geometric arrow head pointing up-right) -->
+      <path d="M 8 -12 L -12 -16 L 24 -32 L 26 2 Z" fill="url(#saengdi-arrow-grad)" stroke="url(#saengdi-arrow-grad)" stroke-width="8" stroke-linejoin="round" />
+    </g>
+
+    <!-- 'ㅅ' Center connector bar -->
+    <rect x="88" y="96" width="22" height="30" rx="10" fill="url(#saengdi-pill-blue)" />
+
+    <!-- 'ㅇ' Consonant Circle in '생' -->
+    <circle cx="94" cy="186" r="40" stroke="#0d2e6b" stroke-width="26" fill="none" />
+
+    <!-- 'ㅐ' Vowel Right Vertical Bar in '생' -->
+    <rect x="168" y="44" width="24" height="186" rx="12" class="navy-solid" />
+
+    <!-- Syllable '디' -->
+    <!-- 'ㄷ' of '디' with extra thick rounded strokes -->
+    <g transform="translate(224, 62)">
+      <!-- Top bar -->
+      <rect x="0" y="0" width="86" height="24" rx="11" class="navy-solid" />
+      <!-- Left vertical bar -->
+      <rect x="0" y="0" width="24" height="168" rx="11" class="navy-solid" />
+      <!-- Bottom bar -->
+      <rect x="0" y="144" width="86" height="24" rx="11" class="navy-solid" />
+    </g>
+
+    <!-- 'ㅣ' of '디' -->
+    <g transform="translate(340, 62)">
+      <!-- Top Accent Leaf / Slash (Gradient) -->
+      <path d="M 0 0 L 20 -22 C 23 -25, 32 -24, 34 -17 L 34 26 Z" fill="url(#saengdi-leaf-grad)" />
+      <!-- Main Vertical Bar (Deep Navy) -->
+      <rect x="10" y="30" width="24" height="138" rx="12" class="navy-solid" />
+    </g>
+  </g>
+
+  <!-- Right: Slogan & Subtitle Matching User's Image Exact Typographic Hierarchy -->
+  <g transform="translate(425, 146)">
+    <!-- "학생부를 디자인하다" (Extra Bold Deep Navy) -->
+    <text x="0" y="0" font-size="52" class="slogan-title" letter-spacing="-0.03em">학생부를 디자인하다</text>
+    <!-- "A I  기 반  학 생 부  디 자 인  플 랫 폼" (Wide tracking) -->
+    <text x="4" y="52" font-size="22" class="slogan-desc">AI 기반 학생부 디자인 플랫폼</text>
+  </g>
+</svg>
