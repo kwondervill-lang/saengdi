@@ -15,10 +15,11 @@ export function downloadReportAsText(report: CounselingReport): void {
 
   const lines: string[] = [];
   lines.push('========================================================================');
-  lines.push(` [생디 | AI 기반 학생부 디자인 플랫폼] 공식 진로진학 정밀진단 리포트`);
+  lines.push(` [생디 | AI 기반 학생부 디자인 플랫폼 (www.sangdi.net)] 공식 진로진학 정밀진단 리포트`);
   lines.push(` 학생부를 디자인하다 | ${report.studentName} 학생 맞춤 진단 결과서`);
   lines.push('========================================================================');
-  lines.push(`- 발급 기관: 생디 (Saengdi)`);
+  lines.push(`- 발급 기관: 생디`);
+  lines.push(`- 공식 웹사이트: www.sangdi.net`);
   lines.push(`- 발급 식별자: SD-${new Date().getFullYear()}`);
   lines.push(`- 슬로건: 학생부를 디자인하다 | AI 기반 학생부 디자인 플랫폼`);
   lines.push(`- 분석 일자: ${report.generatedAt}`);
@@ -112,7 +113,7 @@ export function downloadReportAsText(report: CounselingReport): void {
   });
   lines.push('');
   lines.push('========================================================================');
-  lines.push(' 발급 기관: 생디 (Saengdi) - 학생부를 디자인하다 | AI 기반 학생부 디자인 플랫폼');
+  lines.push(' 발급 기관: 생디 - 학생부를 디자인하다 | 공식 웹사이트: www.sangdi.net');
   lines.push('========================================================================');
 
   const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
@@ -129,7 +130,7 @@ export function downloadReportAsText(report: CounselingReport): void {
 /**
  * Builds the HTML content for both standalone HTML download and PDF generation
  */
-function buildReportHtml(report: CounselingReport): string {
+function buildReportHtml(report: CounselingReport, customLogoUrl?: string | null): string {
   const levelText =
     report.schoolLevel === 'elementary'
       ? '초등학교'
@@ -137,19 +138,21 @@ function buildReportHtml(report: CounselingReport): string {
       ? '중학교'
       : '고등학교';
 
+  const logoSrc = customLogoUrl || '/saengdi_logo.svg';
+
   return `<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${report.studentName} 학생 진로진학 정밀진단 리포트 - 생디</title>
+  <title>${report.studentName} 학생 진로진학 정밀진단 리포트 - 생디 (www.sangdi.net)</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; line-height: 1.6; color: #1e293b; background: #f8fafc; margin: 0; padding: 24px; }
     .container { max-width: 920px; margin: 0 auto; background: #ffffff; padding: 36px 40px; border-radius: 24px; box-shadow: 0 4px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
     .header { border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 24px; }
     .brand-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 16px; }
-    .brand-logo-img { height: 46px; width: auto; object-fit: contain; }
+    .brand-logo-img { height: 46px; width: auto; max-width: 240px; object-fit: contain; }
     .tag { display: inline-block; padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #1d4ed8; color: #fff; }
     .subtag { display: inline-block; padding: 5px 12px; border-radius: 8px; font-size: 12px; background: #f1f5f9; color: #475569; font-weight: 600; margin-left: 6px; }
     h1 { font-size: 25px; color: #0f172a; margin: 12px 0 8px 0; font-weight: 900; letter-spacing: -0.02em; }
@@ -184,12 +187,13 @@ function buildReportHtml(report: CounselingReport): string {
     <div class="header">
       <div class="brand-bar">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <img src="/saengdi_logo_official.png" onerror="this.src='/saengdi_logo.svg'" alt="생디" class="brand-logo-img" />
+          <img src="${logoSrc}" onerror="this.src='/saengdi_logo.svg'" alt="리포트 로고" class="brand-logo-img" />
         </div>
         <div>
           <span class="tag">생디 공식 정밀진단 리포트</span>
           <span class="subtag">발급번호: SD-${new Date().getFullYear()}</span>
           <span class="subtag">분석일자: ${report.generatedAt}</span>
+          <span class="subtag" style="background: #eef2ff; color: #4338ca; font-weight: 700;">www.sangdi.net</span>
         </div>
       </div>
       <h1>${report.studentName} 학생 진로진학 정밀진단 리포트</h1>
@@ -356,7 +360,7 @@ function buildReportHtml(report: CounselingReport): string {
     </div>
 
     <div class="footer">
-      <strong>발급 기관: 생디 (Saengdi) — 학생부를 디자인하다 | AI 기반 학생부 디자인 플랫폼</strong><br>
+      <strong>발급 기관: 생디 — 학생부를 디자인하다 | 공식 웹사이트: www.sangdi.net</strong><br>
       본 리포트는 학생의 교과 성취도와 직업적성·흥미 검사표를 기반으로 작성된 공식 진로진학 상담 결과서입니다.
     </div>
   </div>
@@ -367,8 +371,8 @@ function buildReportHtml(report: CounselingReport): string {
 /**
  * Downloads a standalone, beautifully styled HTML report file (.html)
  */
-export function downloadReportAsHtml(report: CounselingReport): void {
-  const htmlContent = buildReportHtml(report);
+export function downloadReportAsHtml(report: CounselingReport, customLogoUrl?: string | null): void {
+  const htmlContent = buildReportHtml(report, customLogoUrl);
   const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -393,14 +397,33 @@ export async function downloadReportAsPdf(
     throw new Error('리포트 요소를 찾을 수 없습니다.');
   }
 
-  // Create canvas from target DOM element
+  // Pre-wait for all images within the container to load completely
+  const images = Array.from(targetElement.getElementsByTagName('img'));
+  await Promise.all(
+    images.map((img) => {
+      if (img.complete) return Promise.resolve();
+      return new Promise<void>((resolve) => {
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        // Timeout safeguard
+        setTimeout(resolve, 2000);
+      });
+    })
+  );
+
+  // Create canvas from target DOM element with CORS enabled and NO taint
   const canvas = await html2canvas(targetElement, {
     scale: 2, // High resolution for crisp Korean text and logos
     useCORS: true,
+    allowTaint: false, // Prevents canvas security taint errors on toDataURL()
     logging: false,
-    allowTaint: true,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#ffffff',
+    scrollX: 0,
+    scrollY: 0,
     windowWidth: targetElement.scrollWidth,
+    ignoreElements: (element) =>
+      element.getAttribute('data-html2canvas-ignore') === 'true' ||
+      element.classList.contains('print:hidden'),
   });
 
   const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -408,6 +431,7 @@ export async function downloadReportAsPdf(
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
+    compress: true,
   });
 
   const imgWidth = 210; // A4 width in mm
@@ -417,18 +441,33 @@ export async function downloadReportAsPdf(
   let position = 0;
 
   // Add first page
-  pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+  pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
   heightLeft -= pageHeight;
 
-  // Multi-page handling if content exceeds A4 height
+  // Multi-page handling: step by exact pageHeight for seamless page splits
   while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
+    position -= pageHeight;
     pdf.addPage();
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
     heightLeft -= pageHeight;
   }
 
-  // Directly save/download as PDF file
+  // Directly save/download as PDF file (with fallback for iframe sandbox restrictions)
   const fileName = `${report.studentName}_진로진학_정밀진단리포트_생디_${new Date().toISOString().slice(0, 10)}.pdf`;
-  pdf.save(fileName);
+  try {
+    pdf.save(fileName);
+  } catch (saveErr) {
+    console.warn('Direct pdf.save failed, using Blob URL fallback:', saveErr);
+    const pdfBlob = pdf.output('blob');
+    const blobUrl = URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    }, 1000);
+  }
 }

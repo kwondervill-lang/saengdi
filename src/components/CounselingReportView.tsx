@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { CounselingReport } from '../types';
 import { CareerCard } from './CareerCard';
 import { AcademicTargetCard } from './AcademicTargetCard';
@@ -22,7 +22,12 @@ import {
   FileCheck,
   Brain,
   ShieldCheck,
-  Loader2
+  Loader2,
+  Upload,
+  Image as ImageIcon,
+  RotateCcw,
+  Check,
+  Globe
 } from 'lucide-react';
 
 interface CounselingReportViewProps {
@@ -38,12 +43,62 @@ export const CounselingReportView: React.FC<CounselingReportViewProps> = ({
 }) => {
   const [downloadSuccessMsg, setDownloadSuccessMsg] = useState<string | null>(null);
   const [isPdfGenerating, setIsPdfGenerating] = useState<boolean>(false);
+  
+  // Custom logo state (saved in localStorage so it persists across reports)
+  const [customLogo, setCustomLogo] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('saengdi_custom_logo') || null;
+    } catch {
+      return null;
+    }
+  });
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const triggerDownloadMsg = (msg: string) => {
     setDownloadSuccessMsg(msg);
     setTimeout(() => {
       setDownloadSuccessMsg(null);
     }, 4000);
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일(PNG, JPG, SVG 등)만 업로드할 수 있습니다.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('로고 파일 용량은 최대 5MB까지 권장됩니다.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        setCustomLogo(result);
+        try {
+          localStorage.setItem('saengdi_custom_logo', result);
+        } catch (storageErr) {
+          console.warn('Could not cache custom logo to localStorage:', storageErr);
+        }
+        triggerDownloadMsg('로고가 성공적으로 교체되었습니다! (PDF/인쇄 시 자동 반영)');
+      }
+    };
+    reader.readAsDataURL(file);
+    // Reset file input so user can re-upload if needed
+    e.target.value = '';
+  };
+
+  const handleResetLogo = () => {
+    setCustomLogo(null);
+    try {
+      localStorage.removeItem('saengdi_custom_logo');
+    } catch {}
+    triggerDownloadMsg('기본 생디 공식 로고로 복원되었습니다.');
   };
 
   const handleDownloadDirectPdf = async () => {
@@ -61,7 +116,7 @@ export const CounselingReportView: React.FC<CounselingReportViewProps> = ({
   };
 
   const handleDownloadHtml = () => {
-    downloadReportAsHtml(report);
+    downloadReportAsHtml(report, customLogo);
     triggerDownloadMsg('HTML 독립 실행형 리포트가 성공적으로 다운로드되었습니다.');
   };
 
@@ -164,20 +219,67 @@ export const CounselingReportView: React.FC<CounselingReportViewProps> = ({
           <div className="relative">
             {/* Top Brand Logo & Metadata Row */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-100">
-              <div className="flex items-center space-x-3">
-                <SaengdiLogo size="md" className="h-10 sm:h-12" />
+              <div className="flex flex-wrap items-center gap-3">
+                <SaengdiLogo size="md" className="h-10 sm:h-12" customLogoUrl={customLogo} />
+
+                {/* Logo Customization Buttons (Hidden in print/PDF output) */}
+                <div
+                  className="flex items-center gap-1.5 print:hidden pl-2 sm:border-l sm:border-slate-200"
+                  data-html2canvas-ignore="true"
+                >
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleLogoUpload}
+                    accept="image/*"
+                    className="hidden"
+                    id="custom-logo-file-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[11px] sm:text-xs font-semibold text-slate-700 hover:text-indigo-600 transition cursor-pointer shadow-2xs"
+                    title="자신의 학원, 학교, 또는 회사 로고 이미지로 교체합니다"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>{customLogo ? '로고 변경' : '내 로고로 교체'}</span>
+                  </button>
+
+                  {customLogo && (
+                    <button
+                      type="button"
+                      onClick={handleResetLogo}
+                      className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-[11px] sm:text-xs font-semibold text-slate-600 hover:text-rose-600 transition cursor-pointer"
+                      title="기본 생디 공식 로고로 복원"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>초기화</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-2xs">
-                  생디 공식 진단 리포트
-                </span>
+                {customLogo ? (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-2xs flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    커스텀 브랜드 리포트
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-2xs">
+                    생디 공식 진단 리포트
+                  </span>
+                )}
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
                   발급번호: SD-{new Date().getFullYear()}-{Math.floor(1000 + Math.random() * 9000)}
                 </span>
                 <span className="text-slate-500 flex items-center ml-1">
                   <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
                   분석 일자: {report.generatedAt}
+                </span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  <Globe className="w-3.5 h-3.5 mr-1 text-indigo-500" />
+                  www.sangdi.net
                 </span>
               </div>
             </div>
@@ -187,10 +289,10 @@ export const CounselingReportView: React.FC<CounselingReportViewProps> = ({
               <div>
                 <div className="flex items-center space-x-2 mb-1">
                   <span className="text-xs font-bold text-indigo-600">
-                    생디(Saengdi) 진로진학 정밀진단 컨설팅 결과지
+                    생디 진로진학 정밀진단 컨설팅 결과지
                   </span>
                   <span className="text-slate-300">|</span>
-                  <span className="text-xs text-slate-500">학생부를 디자인하다</span>
+                  <span className="text-xs text-slate-500">학생부를 디자인하다 (www.sangdi.net)</span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                   {report.studentName} 학생 진로진학 정밀진단 리포트
@@ -462,81 +564,88 @@ export const CounselingReportView: React.FC<CounselingReportViewProps> = ({
           draft={report.studentRecordDraft}
           studentName={report.studentName}
         />
-      </div>
 
-      {/* Footer Counselor Signature / Advice Box */}
-      <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:mt-8">
-        <div>
-          <div className="flex items-center space-x-2 mb-1">
-            <SaengdiLogo size="sm" className="h-6" />
-            <span className="font-bold text-sm text-slate-800">
-              생디 공식 진로진학 정밀진단 인증 리포트
-            </span>
+        {/* Footer Counselor Signature / Official Certification Box */}
+        <section className="bg-slate-50 rounded-2xl border border-slate-200 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:mt-8">
+          <div>
+            <div className="flex items-center space-x-2 mb-1">
+              <SaengdiLogo size="sm" className="h-6" customLogoUrl={customLogo} />
+              <span className="font-bold text-sm text-slate-800">
+                {customLogo ? '진로진학 정밀진단 인증 리포트' : '생디 공식 진로진학 정밀진단 인증 리포트'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 max-w-2xl leading-relaxed">
+              본 리포트는 <strong>생디(www.sangdi.net | AI 기반 학생부 디자인 플랫폼)</strong>의 진로진학 알고리즘과 교육부 학교생활기록부 기재 표준을 기반으로 산출된 공식 진단 결과입니다.
+              학생의 주관적 교과 관심도와 객관적 성취도 순위, 평소 관심 직업, 그리고 표준화 직업적성·흥미도 검사 결과를 정밀 대조하여 1·2·3순위 고교 유형 및 최적 진로 로드맵을 제안합니다.
+            </p>
+            <div className="mt-2 text-[11px] text-slate-400 flex flex-wrap items-center gap-3">
+              <span>발급 기관: 생디</span>
+              <span>•</span>
+              <span>슬로건: 학생부를 디자인하다</span>
+              <span>•</span>
+              <span className="font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                공식 사이트: www.sangdi.net
+              </span>
+              <span>•</span>
+              <span>보안 인증코드: SD-AI-{new Date().getFullYear()}</span>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 max-w-2xl leading-relaxed">
-            본 리포트는 <strong>생디(Saengdi | AI 기반 학생부 디자인 플랫폼)</strong>의 진로진학 알고리즘과 교육부 학교생활기록부 기재 표준을 기반으로 산출된 공식 진단 결과입니다.
-            학생의 주관적 교과 관심도와 객관적 성취도 순위, 평소 관심 직업, 그리고 표준화 직업적성·흥미도 검사 결과를 정밀 대조하여 1·2·3순위 고교 유형 및 최적 진로 로드맵을 제안합니다.
-          </p>
-          <div className="mt-2 text-[11px] text-slate-400 flex flex-wrap items-center gap-3">
-            <span>발급 기관: 생디 (Saengdi)</span>
-            <span>•</span>
-            <span>슬로건: 학생부를 디자인하다</span>
-            <span>•</span>
-            <span>보안 인증코드: SD-AI-{new Date().getFullYear()}</span>
-          </div>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0 print:hidden">
-          <button
-            type="button"
-            onClick={handleDownloadDirectPdf}
-            disabled={isPdfGenerating}
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold transition cursor-pointer shadow-xs shadow-blue-200 inline-flex items-center disabled:opacity-75"
+          <div
+            className="flex flex-wrap items-center gap-2.5 shrink-0 print:hidden"
+            data-html2canvas-ignore="true"
           >
-            {isPdfGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                생성 중...
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4 mr-1.5" />
-                PDF 다운로드
-              </>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={onPrint}
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-semibold transition cursor-pointer shadow-xs inline-flex items-center"
-          >
-            <Printer className="w-4 h-4 mr-1.5" />
-            인쇄
-          </button>
-          <button
-            type="button"
-            onClick={handleDownloadHtml}
-            className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-xs sm:text-sm font-semibold text-slate-700 transition cursor-pointer inline-flex items-center"
-          >
-            <FileCode className="w-4 h-4 mr-1.5 text-indigo-600" />
-            HTML 다운로드
-          </button>
-          <button
-            type="button"
-            onClick={handleDownloadText}
-            className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-xs sm:text-sm font-semibold text-slate-700 transition cursor-pointer inline-flex items-center"
-          >
-            <FileText className="w-4 h-4 mr-1.5 text-emerald-600" />
-            생기부 문안(.txt)
-          </button>
-          <button
-            type="button"
-            onClick={onBackToEdit}
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
-          >
-            새로운 진단 시작
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handleDownloadDirectPdf}
+              disabled={isPdfGenerating}
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold transition cursor-pointer shadow-xs shadow-blue-200 inline-flex items-center disabled:opacity-75"
+            >
+              {isPdfGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                  PDF 생성 중...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-1.5" />
+                  PDF 다운로드
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onPrint}
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-semibold transition cursor-pointer shadow-xs inline-flex items-center"
+            >
+              <Printer className="w-4 h-4 mr-1.5" />
+              인쇄
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadHtml}
+              className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-xs sm:text-sm font-semibold text-slate-700 transition cursor-pointer inline-flex items-center"
+            >
+              <FileCode className="w-4 h-4 mr-1.5 text-indigo-600" />
+              HTML 다운로드
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadText}
+              className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-xs sm:text-sm font-semibold text-slate-700 transition cursor-pointer inline-flex items-center"
+            >
+              <FileText className="w-4 h-4 mr-1.5 text-emerald-600" />
+              생기부 문안(.txt)
+            </button>
+            <button
+              type="button"
+              onClick={onBackToEdit}
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
+            >
+              새로운 진단 시작
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   );

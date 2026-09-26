@@ -5,11 +5,13 @@ interface SaengdiLogoProps {
   showSlogan?: boolean;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'full' | 'symbol' | 'horizontal';
+  customLogoUrl?: string | null;
 }
 
 export const SaengdiLogo: React.FC<SaengdiLogoProps> = ({
   className = '',
   size = 'md',
+  customLogoUrl = null,
 }) => {
   // Height presets
   const heightClasses = {
@@ -18,11 +20,20 @@ export const SaengdiLogo: React.FC<SaengdiLogoProps> = ({
     lg: 'h-14 sm:h-16',
   }[size];
 
-  // Try the official generated raster image first, with graceful fallback to crystal-clear SVG
-  const [imgSrc, setImgSrc] = useState<string>('/saengdi_logo_official.png');
+  // If customLogoUrl is provided, use it directly
+  // Default to pure vector SVG without English 'Saengdi'
+  const [imgSrc, setImgSrc] = useState<string>(customLogoUrl || '/saengdi_logo.svg');
+
+  // React to customLogoUrl change
+  React.useEffect(() => {
+    if (customLogoUrl) {
+      setImgSrc(customLogoUrl);
+    } else {
+      setImgSrc('/saengdi_logo.svg');
+    }
+  }, [customLogoUrl]);
 
   const handleError = () => {
-    // If the PNG fails to load for any reason, fallback to the vector SVG
     if (imgSrc !== '/saengdi_logo.svg') {
       setImgSrc('/saengdi_logo.svg');
     }
@@ -35,7 +46,7 @@ export const SaengdiLogo: React.FC<SaengdiLogoProps> = ({
         onError={handleError}
         alt="생디 - 학생부를 디자인하다 | AI 기반 학생부 디자인 플랫폼"
         className={`${heightClasses} w-auto object-contain max-w-full`}
-        referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
       />
     </div>
   );

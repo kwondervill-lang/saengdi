@@ -109,7 +109,7 @@ export default function App() {
             <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
               <span className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 mb-3">
                 <Sparkles className="w-3.5 h-3.5 mr-1 text-blue-600" />
-                생디(Saengdi) — AI 기반 학생부 디자인 플랫폼
+                생디 — AI 기반 학생부 디자인 플랫폼
               </span>
               <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
                 진로진학 정밀진단<br />
@@ -149,10 +149,10 @@ export default function App() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-slate-500">
           <div>
             <p className="font-bold text-slate-800 text-sm">
-              생디(Saengdi) — 학생부를 디자인하다
+              생디 — 학생부를 디자인하다
             </p>
             <p className="mt-0.5 text-slate-500">
-              AI 기반 진로진학 정밀진단 및 1·2·3순위 고교 유형 맞춤 리포트 플랫폼
+              AI 기반 진로진학 정밀진단 및 1·2·3순위 고교 유형 맞춤 리포트 플랫폼 | <a href="https://www.sangdi.net" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">www.sangdi.net</a>
             </p>
           </div>
           <p className="text-slate-400 text-right sm:text-left">
