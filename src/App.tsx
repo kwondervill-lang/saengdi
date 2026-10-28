@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { StudentInputForm } from './components/StudentInputForm';
 import { CounselingReportView } from './components/CounselingReportView';
@@ -83,6 +83,35 @@ export default function App() {
   const handlePrint = () => {
     window.print();
   };
+
+  // Notify parent window (e.g. WordPress iframe) of height & report status
+  useEffect(() => {
+    const notifyHeight = () => {
+      try {
+        const height = Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+          document.getElementById('root')?.scrollHeight || 0
+        );
+        window.parent?.postMessage(
+          {
+            type: 'SAENGDI_HEIGHT_CHANGE',
+            height,
+            isReport: Boolean(report),
+          },
+          '*'
+        );
+      } catch (_) {}
+    };
+
+    notifyHeight();
+    const timer = setTimeout(notifyHeight, 350);
+    window.addEventListener('resize', notifyHeight);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', notifyHeight);
+    };
+  }, [report]);
 
   return (
     <div className="min-h-screen bg-slate-100/60 text-slate-800 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
